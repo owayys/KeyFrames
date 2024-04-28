@@ -1,15 +1,21 @@
 @keyframes gradientBG {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 body {
-    font-family: 'Montserrat', sans-serif;
+    font-family: "Montserrat", sans-serif;
     color: #fff;
     line-height: 1.6;
     background-size: 200% 200%;
-    background-image: linear-gradient(45deg, #151A2D, #2D284D, #151A2D);
+    background-image: linear-gradient(45deg, #2d1520, #4d2839, #2d1524);
     animation: gradientBG 10s ease infinite;
 }
 
@@ -42,7 +48,7 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.1);
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
     margin-bottom: 180px;
 }
 
@@ -51,14 +57,20 @@ body {
     box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
 }
 
-input, select, #output, #reportContainer {
-    background-color: rgba(255,255,255,0.1);
+input,
+select,
+#output,
+#reportContainer {
+    background-color: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
-input:hover, input:focus, select:hover, select:focus {
+input:hover,
+input:focus,
+select:hover,
+select:focus {
     background-color: #dfe4ea;
     border: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -66,15 +78,15 @@ input:hover, input:focus, select:hover, select:focus {
 }
 
 .btn-primary {
-    background: linear-gradient(to right, #0062cc, #007bff);
+    background: linear-gradient(to right, #c0276e, #da5392);
     border: none;
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 .btn-secondary {
     background: linear-gradient(to right, #6c757d, #6c757d);
     border: none;
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 .btn:hover {
@@ -94,7 +106,7 @@ footer {
     left: 0;
     bottom: 0;
     width: 100%;
-    background: linear-gradient(to right, #151A2D, #111827);
+    background: linear-gradient(to right, #2d1520, #2d1524);
     color: white;
     text-align: center;
     padding: 10px 0;
@@ -107,7 +119,7 @@ footer {
 }
 
 .agent_response {
-    background-color: #747d8c;
+    background-color: #3f2033;
     margin: 10px;
     padding: 10px;
     border-radius: 12px;
@@ -115,7 +127,7 @@ footer {
 
 #output {
     height: 300px;
-    font-family: 'Times New Roman', Times, , "Courier New", serif;
+    font-family: "Times New Roman", Times, "Courier New", serif;
     overflow: auto;
     padding: 10px;
     margin-bottom: 10px;
@@ -123,10 +135,10 @@ footer {
 }
 
 #reportContainer {
-    background-color: rgba(255,255,255,0.1);
+    background-color: rgba(255, 255, 255, 0.1);
     border: none;
     color: #fff;
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
     padding: 10px;
     border-radius: 12px;
 }

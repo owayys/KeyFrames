@@ -67,13 +67,7 @@
                 <p
                     class="max-w-5xl mx-auto text-gray-600 mt-8"
                     style="font-size: 20px"
-                >
-                    {# Say Hello to GPT Researcher, your AI mate for rapid
-                    insights and comprehensive research. GPT Researcher takes
-                    care of everything from accurate source gathering to
-                    organization of research results - all in one platform
-                    designed to make your research process a breeze. #}
-                </p>
+                ></p>
                 <a href="#form" class="btn btn-primary">Get Started</a>
             </div>
         </section>
@@ -87,29 +81,67 @@
                 />
             </div>
             <form
-                method="POST"
+                id="videoUploadForm"
+                enctype="multipart/form-data"
                 class="mt-3"
                 onsubmit="GPTResearcher.startResearch(); return false;"
             >
                 <div class="form-group">
-                    <label for="task" class="agent-question"
-                        >What would you like me to research next?</label
+                    <label for="videoInput" class="agent-question"
+                        >Video?</label
                     >
                     <input
-                        type="text"
-                        id="task"
-                        name="task"
                         class="form-control"
+                        type="file"
+                        id="videoInput"
+                        name="video"
+                        accept="video/*"
                         required
                     />
-                    <input
-                        type="radio"
-                        name="agent"
-                        id="autoAgent"
-                        value="Auto Agent"
-                        checked
-                        hidden
-                    />
+                    {#
+                    <script>
+                        // Get the form element
+                        const form = document.getElementById("videoUploadForm");
+
+                        // Add event listener for form submission
+                        form.addEventListener("submit", function (event) {
+                            event.preventDefault(); // Prevent the default form submission
+
+                            // Get the file input element
+                            const fileInput =
+                                document.getElementById("videoInput");
+
+                            // Get the selected video file
+                            const videoFile = fileInput.files[0];
+
+                            // Create a FormData object to hold the video file
+                            const formData = new FormData();
+                            formData.append("video", videoFile);
+
+                            // Send the video file using fetch API
+                            fetch("http://127.0.0.1:8000/upload", {
+                                // Replace with your FastAPI URL
+                                method: "POST",
+                                body: formData,
+                            })
+                                .then((response) => response.json()) // Parse JSON response
+                                .then((data) => {
+                                    // Display a success message or handle the response data as needed
+                                    console.log(data);
+                                })
+                                .catch((error) => {
+                                    // Display an error message or handle the error as needed
+                                    document.getElementById(
+                                        "uploadStatus"
+                                    ).innerText = "Failed to upload video.";
+                                    console.error(
+                                        "Error uploading video:",
+                                        error
+                                    );
+                                });
+                        });
+                    </script>
+                    #}
                 </div>
                 <div class="form-group">
                     <div class="row"></div>
@@ -121,22 +153,6 @@
                         Auto Agent
                     </button>
                 </div>
-                <div class="form-group">
-                    <label for="report_type" class="agent-question"
-                        >What type of report would you like me to
-                        generate?</label
-                    >
-                    <select name="report_type" class="form-control" required>
-                        <option value="research_report">
-                            Summary - Short and fast (~2 min)
-                        </option>
-                        <option value="detailed_report">
-                            Detailed - In depth and longer (~5 min)
-                        </option>
-                        <option value="resource_report">Resource Report</option>
-                    </select>
-                </div>
-                <div class="form-group"></div>
                 <input
                     type="submit"
                     value="Research"
@@ -146,11 +162,6 @@
 
             <div class="margin-div">
                 <h2>Agent Output</h2>
-                <p class="mt-2 text-left" style="font-size: 0.8rem">
-                    An agent tailored specifically to your task will be
-                    generated to provide the most precise and relevant research
-                    results.
-                </p>
                 <div id="output"></div>
             </div>
             <div class="margin-div">

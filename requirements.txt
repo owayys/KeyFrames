@@ -1,3 +1,14 @@
-aiofiles
-docx
-htmldocx  
+aiofiles==23.2.1
+assemblyai==0.26.0
+docx==0.2.4
+fastapi==0.110.2
+htmldocx==0.0.6
+mistune==3.0.2
+numpy==1.26.4
+opencv_python==4.9.0.80
+pydantic==2.7.1
+python-dotenv==1.0.1
+python_docx==1.1.0
+Requests==2.31.0
+scipy==1.13.0
+uvicorn==0.29.0
