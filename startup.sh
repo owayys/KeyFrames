@@ -1,1 +1,3 @@
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+apt update
+apt-get install -y libGL
+gunicorn app:app
