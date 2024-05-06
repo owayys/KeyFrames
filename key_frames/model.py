@@ -1,5 +1,7 @@
 import requests
+import string
 from key_frames.utils import encode_images_in_folder
+from openai import OpenAI
 
 
 def mainGPT(video_dir, user_prompt, api_key):
@@ -63,8 +65,8 @@ def mainGPT(video_dir, user_prompt, api_key):
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     response_data = response.json()
 
-    if response_data['error']:
-        return response_data['error']
+    if 'error' in response:
+        return response['error']
 
     chat_history.append(
         {"role": "AI", "content": response_data['choices'][0]['message']['content']})
@@ -73,3 +75,49 @@ def mainGPT(video_dir, user_prompt, api_key):
     # for message in chat_history:
     #     print(f"AI: {message['content']}")
     return (chat_history)
+
+
+def preprocess_text(text):
+    # Convert text to lowercase
+    lowercased_text = text.lower()
+
+    # Remove punctuation using translate and string.punctuation
+    translator = str.maketrans('', '', string.punctuation)
+    no_punctuation_text = lowercased_text.translate(translator)
+
+    return no_punctuation_text
+
+
+def check_user_input(user_prompt, api_key):
+    client = OpenAI(api_key=api_key)
+
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant. Tell if you need to see a specific picture or video to answer this query. Do not rely on anything else. Be very sure of your answer. if you have any doubt say Yes. Just output Yes or No"},
+        {"role": "user", "content":  str(user_prompt)}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        messages=messages
+    )
+
+    return (str(response.choices[0].message.content))
+
+
+def gpt_response(chat_history, user_prompt, api_key):
+    client = OpenAI(api_key=api_key)
+
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant" +
+            str(user_prompt)},
+        {"role": "user", "content": str(chat_history)}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=messages
+    )
+
+    return {"role": "AI", "content": response.choices[0].message.content}
+    # chat_history.append(
+    #     {"role": "AI", "content": response.choices[0].message.content})

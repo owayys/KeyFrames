@@ -98,50 +98,6 @@
                         accept="video/*"
                         required
                     />
-                    {#
-                    <script>
-                        // Get the form element
-                        const form = document.getElementById("videoUploadForm");
-
-                        // Add event listener for form submission
-                        form.addEventListener("submit", function (event) {
-                            event.preventDefault(); // Prevent the default form submission
-
-                            // Get the file input element
-                            const fileInput =
-                                document.getElementById("videoInput");
-
-                            // Get the selected video file
-                            const videoFile = fileInput.files[0];
-
-                            // Create a FormData object to hold the video file
-                            const formData = new FormData();
-                            formData.append("video", videoFile);
-
-                            // Send the video file using fetch API
-                            fetch("http://127.0.0.1:8000/upload", {
-                                // Replace with your FastAPI URL
-                                method: "POST",
-                                body: formData,
-                            })
-                                .then((response) => response.json()) // Parse JSON response
-                                .then((data) => {
-                                    // Display a success message or handle the response data as needed
-                                    console.log(data);
-                                })
-                                .catch((error) => {
-                                    // Display an error message or handle the error as needed
-                                    document.getElementById(
-                                        "uploadStatus"
-                                    ).innerText = "Failed to upload video.";
-                                    console.error(
-                                        "Error uploading video:",
-                                        error
-                                    );
-                                });
-                        });
-                    </script>
-                    #}
                 </div>
                 <div class="form-group">
                     <div class="row"></div>
@@ -155,6 +111,7 @@
                 </div>
                 <input
                     type="submit"
+                    id="researchButton"
                     value="Research"
                     class="btn btn-primary button-padding"
                 />
@@ -165,37 +122,17 @@
                 <div id="output"></div>
             </div>
             <div class="margin-div">
-                <h2>Research Report</h2>
+                <h2>Chat</h2>
                 <div id="reportContainer"></div>
-                <div id="reportActions">
-                    <div
-                        class="alert alert-info"
-                        role="alert"
-                        id="status"
-                    ></div>
-                    <a
-                        id="copyToClipboard"
-                        onclick="GPTResearcher.copyToClipboard()"
-                        class="btn btn-secondary mt-3"
-                        style="margin-right: 10px"
-                        >Copy to clipboard</a
-                    >
-                    <a
-                        id="downloadLink"
-                        href="#"
-                        class="btn btn-secondary mt-3"
-                        style="margin-right: 10px"
-                        target="_blank"
-                        >Download as PDF</a
-                    >
-                    <a
-                        id="downloadLinkWord"
-                        href="#"
-                        class="btn btn-secondary mt-3"
-                        target="_blank"
-                        >Download as Docx</a
-                    >
-                </div>
+            </div>
+            <div id="chatContainer">
+                <div id="chatDisplay"></div>
+                <input
+                    type="text"
+                    id="chatInput"
+                    placeholder="Type your message..."
+                />
+                <button id="sendChatButton">Send</button>
             </div>
         </main>
 

@@ -1,10 +1,17 @@
 const GPTResearcher = (() => {
+    let socket;
     const init = () => {
         // Not sure, but I think it would be better to add event handlers here instead of in the HTML
         //document.getElementById("startResearch").addEventListener("click", startResearch);
+        // document
+        //     .getElementById("copyToClipboard")
+        //     .addEventListener("click", copyToClipboard);
         document
-            .getElementById("copyToClipboard")
-            .addEventListener("click", copyToClipboard);
+            .getElementById("sendChatButton")
+            .addEventListener("click", sendChatMessage);
+        document
+            .getElementById("chatInput")
+            .addEventListener("keydown", handleChatInput);
 
         updateState("initial");
     };
@@ -21,13 +28,41 @@ const GPTResearcher = (() => {
         listenToSockEvents();
     };
 
+    const sendChatMessage = () => {
+        const chatInput = document.getElementById("chatInput");
+        const message = chatInput.value.trim();
+        if (message) {
+            const requestData = {
+                message: message,
+            };
+            socket.send(`chat ${JSON.stringify(requestData)}`);
+            chatInput.value = ""; // Clear the input field after sending the message
+            updateState("in_progress");
+            const converter = new showdown.Converter();
+            const reportContainer = document.getElementById("reportContainer");
+            var div = document.createElement("div");
+            div.className = "user_response";
+            const markdownOutput = converter.makeHtml(message);
+            div.innerHTML = markdownOutput;
+            reportContainer.appendChild(div);
+            updateScroll();
+        }
+    };
+
+    const handleChatInput = (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendChatMessage();
+        }
+    };
+
     const listenToSockEvents = () => {
         const { protocol, host, pathname } = window.location;
         const ws_uri = `${
             protocol === "https:" ? "wss:" : "ws:"
         }//${host}${pathname}ws`;
         const converter = new showdown.Converter();
-        const socket = new WebSocket(ws_uri);
+        socket = new WebSocket(ws_uri);
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -35,9 +70,7 @@ const GPTResearcher = (() => {
                 addAgentResponse(data);
             } else if (data.type === "report") {
                 writeReport(data, converter);
-            } else if (data.type === "path") {
                 updateState("finished");
-                updateDownloadLink(data);
             }
         };
 
@@ -72,19 +105,21 @@ const GPTResearcher = (() => {
     };
 
     const writeReport = (data, converter) => {
+        console.log(data.output);
         const reportContainer = document.getElementById("reportContainer");
-        const markdownOutput = converter.makeHtml(data.output);
-        reportContainer.innerHTML += markdownOutput;
+        reportContainer.replaceChildren();
+        for (let i = 0; i < data.output.length; i++) {
+            var div = document.createElement("div");
+            if (data.output[i].role === "AI") {
+                div.className = "agent_response";
+            } else if (data.output[i].role === "user") {
+                div.className = "user_response";
+            }
+            const markdownOutput = converter.makeHtml(data.output[i].content);
+            div.innerHTML = markdownOutput;
+            reportContainer.appendChild(div);
+        }
         updateScroll();
-    };
-
-    const updateDownloadLink = (data) => {
-        const pdf_path = data.output.pdf;
-        const docx_path = data.output.docx;
-        document.getElementById("downloadLink").setAttribute("href", pdf_path);
-        document
-            .getElementById("downloadLinkWord")
-            .setAttribute("href", docx_path);
     };
 
     const updateScroll = () => {
@@ -103,60 +138,105 @@ const GPTResearcher = (() => {
         document.body.removeChild(textarea);
     };
 
+    const setChatInputStatus = (enabled) => {
+        const chatInput = document.getElementById("chatInput");
+        const sendChatButton = document.getElementById("sendChatButton");
+
+        chatInput.disabled = !enabled;
+        sendChatButton.disabled = !enabled;
+
+        if (enabled) {
+            chatInput.style.filter = "none";
+            sendChatButton.style.filter = "none";
+        } else {
+            chatInput.style.filter = "opacity(0.3)";
+            sendChatButton.style.filter = "opacity(0.3)";
+        }
+    };
+
     const updateState = (state) => {
-        var status = "";
+        const chatInput = document.getElementById("chatInput");
+        const videoInput = document.getElementById("videoInput");
+        const researchButton = document.getElementById("researchButton");
+
         switch (state) {
             case "in_progress":
-                status = "Research in progress...";
-                setReportActionsStatus("disabled");
+                videoInput.disabled = true;
+                researchButton.disabled = true;
+                setChatInputStatus(false);
+                chatInput.placeholder = "Research in progress...";
                 break;
             case "finished":
-                status = "Research finished!";
-                setReportActionsStatus("enabled");
+                chatInput.placeholder = "Type something...";
+                setChatInputStatus(true);
                 break;
             case "error":
-                status = "Research failed!";
-                setReportActionsStatus("disabled");
+                chatInput.placeholder = "Research failed!";
+                setChatInputStatus(false);
                 break;
             case "initial":
-                status = "";
-                setReportActionsStatus("hidden");
+                chatInput.placeholder = "Upload a video to begin...";
+                setChatInputStatus(false);
                 break;
             default:
-                setReportActionsStatus("disabled");
-        }
-        document.getElementById("status").innerHTML = status;
-        if (document.getElementById("status").innerHTML == "") {
-            document.getElementById("status").style.display = "none";
-        } else {
-            document.getElementById("status").style.display = "block";
+                setChatInputStatus(false);
         }
     };
 
-    /**
-     * Shows or hides the download and copy buttons
-     * @param {str} status Kind of hacky. Takes "enabled", "disabled", or "hidden". "Hidden is same as disabled but also hides the div"
-     */
-    const setReportActionsStatus = (status) => {
-        const reportActions = document.getElementById("reportActions");
-        // Disable everything in reportActions until research is finished
+    // const updateState = (state) => {
+    //     var status = "";
+    //     switch (state) {
+    //         case "in_progress":
+    //             status = "Research in progress...";
+    //             setReportActionsStatus("disabled");
+    //             break;
+    //         case "finished":
+    //             status = "Research finished!";
+    //             setReportActionsStatus("enabled");
+    //             break;
+    //         case "error":
+    //             status = "Research failed!";
+    //             setReportActionsStatus("disabled");
+    //             break;
+    //         case "initial":
+    //             status = "";
+    //             setReportActionsStatus("hidden");
+    //             break;
+    //         default:
+    //             setReportActionsStatus("disabled");
+    //     }
+    //     document.getElementById("status").innerHTML = status;
+    //     if (document.getElementById("status").innerHTML == "") {
+    //         document.getElementById("status").style.display = "none";
+    //     } else {
+    //         document.getElementById("status").style.display = "block";
+    //     }
+    // };
 
-        if (status == "enabled") {
-            reportActions.querySelectorAll("a").forEach((link) => {
-                link.classList.remove("disabled");
-                link.removeAttribute("onclick");
-                reportActions.style.display = "block";
-            });
-        } else {
-            reportActions.querySelectorAll("a").forEach((link) => {
-                link.classList.add("disabled");
-                link.setAttribute("onclick", "return false;");
-            });
-            if (status == "hidden") {
-                reportActions.style.display = "none";
-            }
-        }
-    };
+    // /**
+    //  * Shows or hides the download and copy buttons
+    //  * @param {str} status Kind of hacky. Takes "enabled", "disabled", or "hidden". "Hidden is same as disabled but also hides the div"
+    //  */
+    // const setReportActionsStatus = (status) => {
+    //     const reportActions = document.getElementById("reportActions");
+    //     // Disable everything in reportActions until research is finished
+
+    //     if (status == "enabled") {
+    //         reportActions.querySelectorAll("a").forEach((link) => {
+    //             link.classList.remove("disabled");
+    //             link.removeAttribute("onclick");
+    //             reportActions.style.display = "block";
+    //         });
+    //     } else {
+    //         reportActions.querySelectorAll("a").forEach((link) => {
+    //             link.classList.add("disabled");
+    //             link.setAttribute("onclick", "return false;");
+    //         });
+    //         if (status == "hidden") {
+    //             reportActions.style.display = "none";
+    //         }
+    //     }
+    // };
 
     document.addEventListener("DOMContentLoaded", init);
     return {
