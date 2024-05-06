@@ -8,7 +8,7 @@ import os
 from backend.utils import write_md_to_pdf, write_md_to_word
 from preprocessing.frame_extractor import VideoKeyFrameExtractor
 from preprocessing.transcribe_audio import transcribe_audio
-from key_frames.model import mainGPT
+from key_frames.model import mainGPT, preprocess_text, check_user_input, gpt_response
 from backend.websocket_manager import WebSocketManager
 import base64
 from dotenv import load_dotenv
@@ -29,6 +29,8 @@ app.mount("/static", StaticFiles(directory="./frontend/static"), name="static")
 templates = Jinja2Templates(directory="./frontend")
 
 manager = WebSocketManager()
+
+chat_memory = {}
 
 
 @app.on_event("startup")
@@ -64,14 +66,16 @@ async def generate_chat(filename: str, upload: str, websocket: WebSocket):
 
     chat = mainGPT(f"inputs/{upload}",
                    "Please provide a summary of the video content.", os.environ["OPENAI_API_KEY"])
-    print(chat)
     await websocket.send_json({"type": "logs", "output": "Report ready!"})
-    await websocket.send_json({"type": "report", "output": chat['message'] if 'message' in chat else chat})
+
+    return chat
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
+    chat_memory[websocket] = {}
+    chat_memory[websocket]['history'] = []
     try:
         while True:
             data = await websocket.receive_text()
@@ -81,23 +85,46 @@ async def websocket_endpoint(websocket: WebSocket):
                 filename = json_data.get("name")
                 upload = filename.split(".")[0]
                 if input and filename:
+                    chat_memory[websocket]['filepath'] = f"inputs/{upload}"
                     if not os.path.isdir(f"inputs/{upload}"):
                         os.makedirs(f"inputs/{upload}")
                         os.makedirs(f"inputs/{upload}/frames")
                     with open(f"uploads/{filename}", "wb") as video_file:
                         video_file.write(input)
-                    await generate_chat(filename, upload, websocket)
-                # print(input)
-                # if task and report_type:
-                #     report = await manager.start_streaming(task, report_type, websocket)
-                #     # Saving report as pdf
-                #     # pdf_path = await write_md_to_pdf(report)
-                #     # Saving report as docx
-                #     docx_path = await write_md_to_word(report)
-                #     # Returning the path of saved report files
-                #     await websocket.send_json({"type": "path", "output": {"pdf": '', "docx": docx_path}})
-                # else:
-                #     print("Error: not enough parameters provided.")
+                    new_chat = await generate_chat(filename, upload, websocket)
+                    if not 'message' in new_chat:
+                        chat_memory[websocket]['history'].append(new_chat[1])
+                        await websocket.send_json({"type": "report", "output": chat_memory[websocket]['history']})
+                    else:
+                        chat_memory[websocket]['history'].append(new_chat)
+                        await websocket.send_json({"type": "report", "output": chat_memory[websocket]['history']})
+            elif data.startswith("chat"):
+                json_data = json.loads(data[5:])
+                user_input = json_data.get("message")
+                # print(user_input, chat_histories[websocket])
+                image_check = check_user_input(
+                    json_data, os.environ["OPENAI_API_KEY"])
+                chat_memory[websocket]['history'].append(
+                    {"role": "user", "content": user_input})
+                processed_image_check = preprocess_text(image_check)
+                if processed_image_check == "yes":
+                    print("image is needed")
+                    response = mainGPT(
+                        chat_memory[websocket]['filepath'], user_input, os.environ["OPENAI_API_KEY"])
+
+                    if not 'message' in response:
+                        chat_memory[websocket]['history'].append(response[1])
+                        await websocket.send_json({"type": "report", "output": chat_memory[websocket]['history']})
+                    else:
+                        chat_memory[websocket]['history'].append(response)
+                        await websocket.send_json({"type": "report", "output": chat_memory[websocket]['history']})
+                else:
+                    print('image not needed')
+                    response = gpt_response(chat_memory[websocket]['history'], user_input,
+                                            os.environ["OPENAI_API_KEY"])
+                    chat_memory[websocket]['history'].append(
+                        response)
+                    await websocket.send_json({"type": "report", "output": chat_memory[websocket]['history']})
 
     except WebSocketDisconnect:
         await manager.disconnect(websocket)
