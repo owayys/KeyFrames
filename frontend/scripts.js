@@ -18,7 +18,7 @@ const GPTResearcher = (() => {
         updateState("in_progress");
 
         addAgentResponse({
-            output: "🤔 Thinking about research questions for the task...",
+            output: "Uploading video to the server...",
         });
 
         listenToSockEvents();
