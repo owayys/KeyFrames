@@ -1,11 +1,8 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, File, UploadFile
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 import json
 import os
-from backend.utils import write_md_to_pdf, write_md_to_word
 from preprocessing.frame_extractor import VideoKeyFrameExtractor
 from preprocessing.transcribe_audio import transcribe_audio
 from key_frames.model import mainGPT, preprocess_text, check_user_input, gpt_response
@@ -13,13 +10,6 @@ from backend.websocket_manager import WebSocketManager
 import base64
 from dotenv import load_dotenv
 load_dotenv()
-
-
-class ResearchRequest(BaseModel):
-    task: str
-    report_type: str
-    agent: str
-
 
 app = FastAPI()
 

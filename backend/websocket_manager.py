@@ -1,13 +1,7 @@
-# connect any client to gpt-researcher using websocket
 import asyncio
-import datetime
 from typing import Dict, List
 
 from fastapi import WebSocket
-
-# from backend.report_type import BasicReport, DetailedReport
-
-# from gpt_researcher.utils.enum import ReportType
 
 
 class WebSocketManager:
@@ -51,30 +45,3 @@ class WebSocketManager:
             await self.message_queues[websocket].put(None)
             del self.sender_tasks[websocket]
             del self.message_queues[websocket]
-
-    # async def start_streaming(self, task, report_type, websocket):
-    #     """Start streaming the output."""
-    #     report = await run_agent(task, report_type, websocket)
-    #     return report
-
-
-# async def run_agent(task, report_type, websocket):
-#     """Run the agent."""
-#     # measure time
-#     start_time = datetime.datetime.now()
-#     # add customized JSON config file path here
-#     config_path = ""
-#     # Instead of running the agent directly run it through the different report type classes
-#     if report_type == ReportType.DetailedReport.value:
-#         researcher = DetailedReport(
-#             query=task, source_urls=None, config_path=config_path, websocket=websocket)
-#     else:
-#         researcher = BasicReport(query=task, report_type=report_type,
-#                                  source_urls=None, config_path=config_path, websocket=websocket)
-
-#     report = await researcher.run()
-#     # measure time
-#     end_time = datetime.datetime.now()
-#     await websocket.send_json({"type": "logs", "output": f"\nTotal run time: {end_time - start_time}\n"})
-
-#     return report

@@ -132,21 +132,10 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script src="/site/scripts.js"></script>
         <script>
-            // const btnChoose = document.getElementById('btnChoose');
             const btnShowAuto = document.getElementById("btnShowAuto");
             const autoAgentDiv = document.getElementById("autoAgentDiv");
             const agentChoices =
                 document.getElementsByClassName("agent-choices");
-
-            /**
-    btnChoose.addEventListener('click', function () {
-        btnShowAuto.style.display = 'inline-block';
-        btnChoose.style.display = 'none';
-        autoAgentDiv.style.display = 'none';
-        agentChoices[0].style.display = 'flex';
-    });
-    **/
-
             btnShowAuto.addEventListener("click", function () {
                 btnShowAuto.style.display = "none";
                 btnChoose.style.display = "inline-block";
